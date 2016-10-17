@@ -1,0 +1,22 @@
+{
+  "name": "xyfocus",
+  "version": "1.0.0",
+  "author": {
+    "name": "Darren Schnare",
+    "email": "schnare.d@gmail.com"
+  },
+  "description": "XY focus framework for use in the browser.",
+  "main": "node/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:node": "tsc -p .",
+    "build:web": "webpack",
+    "build:web2": "tsc -p . --module amd --outFile web/xyfocus.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^0.9.2",
+    "typescript": "^2.0.3",
+    "webpack": "^1.13.2"
+  }
+}
