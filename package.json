@@ -5,7 +5,7 @@
     "name": "Darren Schnare",
     "email": "schnare.d@gmail.com"
   },
-  "description": "Gernal purpose XY focus navigation management framework.",
+  "description": "General purpose XY focus navigation management framework.",
   "main": "node/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
