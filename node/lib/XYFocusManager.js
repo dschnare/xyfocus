@@ -1,21 +1,21 @@
 ﻿"use strict";
-var XYDirections = require('./xyDirections');
+var XYDirections = require('./XYDirections');
 var getElementsHitByVec_1 = require('./Foundation/getElementsHitByVec');
 var XYVectors = require('./Foundation/XYVectors');
 var XYFocusManagerFocusRootMixin_1 = require('./XYFocusManagerFocusRootMixin');
 var XYFocusManagerFocusEngagementMixin_1 = require('./XYFocusManagerFocusEngagementMixin');
 var XYFocusManager = (function () {
-    function XYFocusManager(focusManager, xyInputManager) {
+    function XYFocusManager(focusManager, keyboardInputManager) {
         this.focusManager = focusManager;
-        this.xyInputManager = xyInputManager;
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_RIGHT, { key: 'ArrowRight', keyCode: 39 });
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_RIGHT, { key: 'Tab', keyCode: 9 });
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_LEFT, { key: 'ArrowLeft', keyCode: 37 });
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_LEFT, { key: 'TAB', keyCode: 9, shiftKey: true });
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_UP, { key: 'ArrowUp', keyCode: 38 });
-        this.xyInputManager.addKeyMapping(XYDirections.DIR_DOWN, { key: 'ArrowDown', keyCode: 40 });
+        this.keyboardInputManager = keyboardInputManager;
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_RIGHT, { key: 'ArrowRight', keyCode: 39 });
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_RIGHT, { key: 'Tab', keyCode: 9 });
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_LEFT, { key: 'ArrowLeft', keyCode: 37 });
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_LEFT, { key: 'Tab', keyCode: 9, shiftKey: true });
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_UP, { key: 'ArrowUp', keyCode: 38 });
+        keyboardInputManager.addKeyMapping(XYDirections.DIR_DOWN, { key: 'ArrowDown', keyCode: 40 });
         var self = this;
-        this.xyInputManager.addEventListener('keyinput', function (event) {
+        this.keyboardInputManager.addEventListener('keyinput', function (event) {
             switch (event.keyClass) {
                 case XYDirections.DIR_RIGHT:
                 case XYDirections.DIR_LEFT:
@@ -31,10 +31,32 @@ var XYFocusManager = (function () {
             }
         });
     }
-    XYFocusManager.prototype.getNextFocusElementPositionOverride = function (xyDirection, el) {
+    XYFocusManager.prototype.getFocusElementNavigationVectorOrigin = function (el, xyDirection) {
         var rect = el.getBoundingClientRect();
-        return { x: rect.left, y: rect.top };
+        var origin = {
+            x: Math.round(rect.left + rect.width / 2),
+            y: Math.round(rect.top + rect.height / 2)
+        };
+        switch (xyDirection) {
+            case XYDirections.DIR_RIGHT:
+                origin.x = rect.left + rect.width;
+                break;
+            case XYDirections.DIR_DOWN:
+                origin.y = rect.top + rect.height;
+                break;
+            case XYDirections.DIR_LEFT:
+                origin.x = rect.left;
+                break;
+            case XYDirections.DIR_UP:
+                origin.y = rect.top;
+                break;
+            default:
+                throw new Error('XY direction not supported "' + xyDirection + '"');
+        }
+        return origin;
     };
+    // getNextFocusElement()
+    // getNextFocusElement(xyDirection)
     XYFocusManager.prototype.getNextFocusElement = function (xyDirection) {
         var el = this.focusManager.currentFocusElement();
         var vec = null;
@@ -42,10 +64,8 @@ var XYFocusManager = (function () {
         if (!el)
             return null;
         if (el.dataset[xyDirection + 'NextFocus'])
-            return document.querySelector(el.dataset[dir + 'NextFocus']);
-        var pos = this.getNextFocusElementPositionOverride(xyDirection, el);
-        var x = pos.x;
-        var y = pos.y;
+            return document.querySelector(el.dataset[xyDirection + 'NextFocus']);
+        var _a = this.getFocusElementNavigationVectorOrigin(el, xyDirection), x = _a.x, y = _a.y;
         switch (xyDirection) {
             case XYDirections.DIR_RIGHT:
                 vec = XYVectors.VEC_RIGHT;

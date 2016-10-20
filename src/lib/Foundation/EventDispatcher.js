@@ -46,9 +46,10 @@ export default class EventDispatcher {
         }
       }
 
-      for (var i = 0, l = stack.length; i < l && !propagationStopped; i += 1) {
+      for (var i = 0, l = stack.length; i < l; i += 1) {
         listener = stack[i]
         if (listener) listener(event)
+        if (!propagationStopped) break
       }
 
       event.defaultPrevented = defaultPrevented

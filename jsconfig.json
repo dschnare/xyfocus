@@ -3,11 +3,11 @@
     "target": "es5",
     "module": "commonjs",
     "emitBOM": true,
-    "outDir": "node",
-    "allowJs": true
+    "outDir": "node"
   },
   "exclude": [
-    "xyfocus.js",
+    "xyfocus_orig.js",
+    "webpack.config.js",
     "node_modules",
     "web",
     "node"

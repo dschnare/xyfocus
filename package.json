@@ -9,13 +9,17 @@
   "main": "node/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:node": "tsc -p .",
-    "build:web": "webpack",
-    "build:web2": "tsc -p . --module amd --outFile web/xyfocus.js"
+    "build": "npm run build:node && npm run build:web",
+    "build:node": "tsc -p ./jsconfig.json",
+    "build:web": "webpack"
   },
   "license": "MIT",
   "devDependencies": {
-    "ts-loader": "^0.9.2",
+    "eslint": "^3.8.1",
+    "eslint-config-standard": "^6.2.0",
+    "eslint-plugin-promise": "^3.3.0",
+    "eslint-plugin-standard": "^2.0.1",
+    "ts-loader": "^0.9.4",
     "typescript": "^2.0.3",
     "webpack": "^1.13.2"
   }

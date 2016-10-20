@@ -3,7 +3,6 @@ import FocusablePredicateCollection from './Foundation/FocusablePredicateCollect
 import KeyboardInputManager from './Foundation/KeyboardInputManager'
 import XYFocusManager from './XYFocusManager'
 
-
 export default function create (focusChangeOverride) {
   var focusMgr = new FocusManager(new FocusablePredicateCollection())
 
@@ -15,5 +14,5 @@ export default function create (focusChangeOverride) {
 
   focusMgr.focusChangeOverride = focusChangeOverride
 
-  return new XYFocusManager(focusMgr, new XYInputManager())
+  return new XYFocusManager(focusMgr, new KeyboardInputManager())
 }

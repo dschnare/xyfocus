@@ -68,7 +68,7 @@ export default class FocusManager extends EventDispatcher {
     offset = isNaN(offset) ? 1 : offset
 
     var els = this.getTabbableElements()
-      .filter(isElementTabbable)
+      .filter(this.isElementTabbable)
       .sort(function (a, b) {
         return a.tabindex - b.tabindex
       })

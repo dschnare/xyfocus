@@ -1,7 +1,7 @@
 ﻿"use strict";
 var EventDispatcher = (function () {
-    function EventDispatcher(proxy) {
-        this.proxy = proxy || this;
+    function EventDispatcher(eventTargetProxy) {
+        this.eventTargetProxy = eventTargetProxy || this;
         this.listeners = Object.create(null);
     }
     EventDispatcher.prototype.addEventListener = function (eventType, listener) {
@@ -28,7 +28,7 @@ var EventDispatcher = (function () {
             throw new Error('Cannot dispatch event that already has a target.');
         }
         if (stack) {
-            event.target = this.proxy;
+            event.target = this.eventTargetProxy || this;
             event.eventPhase = 2; // AT_TARGET
             event.stopPropagation = function () {
                 propagationStopped = true;
@@ -41,13 +41,17 @@ var EventDispatcher = (function () {
                     event.defaultPrevented = true;
                 }
             };
-            for (var i = 0, l = stack.length; i < l && !propagationStopped; i += 1) {
+            for (var i = 0, l = stack.length; i < l; i += 1) {
                 listener = stack[i];
                 if (listener)
                     listener(event);
+                if (!propagationStopped)
+                    break;
             }
-            return !defaultPrevented;
+            event.defaultPrevented = defaultPrevented;
+            event.propagationStopped = propagationStopped;
         }
+        return !defaultPrevented;
     };
     return EventDispatcher;
 }());

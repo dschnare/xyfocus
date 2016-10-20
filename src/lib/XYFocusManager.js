@@ -70,7 +70,7 @@ class XYFocusManager {
     xyDirection = xyDirection || XYDirections.DIR_RIGHT
 
     if (!el) return null
-    if (el.dataset[xyDirection + 'NextFocus']) return document.querySelector(el.dataset[dir + 'NextFocus'])
+    if (el.dataset[xyDirection + 'NextFocus']) return document.querySelector(el.dataset[xyDirection + 'NextFocus'])
 
     var { x, y } = this.getFocusElementNavigationVectorOrigin(el, xyDirection)
 

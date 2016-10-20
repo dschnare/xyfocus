@@ -21,13 +21,13 @@ export default function XYFocusManagerFocusRootMixin (XYFocusManager) {
 
       var self = this
       this.focusManager.addEventListener('focuschanging', function (event) {
-        var focusRoot = getFocusRoot(event.focusElement)
+        var focusRoot = self.getFocusRoot(event.focusElement)
         if (this._currFocusRoot && focusRoot !== this._currFocusRoot) {
           event.preventDefault()
         }
       })
       this.focusManager.addEventListener('focuschanged', function (event) {
-        var focusRoot = getFocusRoot(event.focusElement)
+        var focusRoot = self.getFocusRoot(event.focusElement)
         self._currFocusEl = event.focusElement
         self._currFocusRoot = focusRoot
       })
@@ -78,7 +78,7 @@ export default function XYFocusManagerFocusRootMixin (XYFocusManager) {
           do {
             var offset = (xyDirection === XYDirections.DIR_RIGHT || xyDirection === XYDirections.DIR_DOWN) ? 1 : -1
             nextFocusEl = this.focusManager.getNextTabbableElement(nextFocusEl, offset)
-          } while (nextFocusEl && this.getFocusRoot(nextFocusEl) !== this._currFocusRoot);
+          } while (nextFocusEl && this.getFocusRoot(nextFocusEl) !== this._currFocusRoot)
         }
       }
 

@@ -8,10 +8,11 @@ var EventDispatcher_1 = require('./Foundation/EventDispatcher');
 function XYFocusManagerFocusEngagementMixin(XYFocusManager) {
     return (function (_super) {
         __extends(XYFocusManagerFocusEngagement, _super);
-        function XYFocusManagerFocusEngagement(focusManager, xyInputManager) {
-            _super.call(this, focusManager, xyInputManager);
+        function XYFocusManagerFocusEngagement(focusManager, keyboardInputManager) {
+            _super.call(this, focusManager, keyboardInputManager);
             this.focusStack = [];
-            this.dispatcher = new EventDispatcher_1.default(this)[].slice.call(document.querySelectorAll('[data-focus-engagement]'))
+            this.dispatcher = new EventDispatcher_1.default(this);
+            [].slice.call(document.querySelectorAll('[data-focus-engagement]'))
                 .forEach(function (el) {
                 el.dataset['focusRoot'] = '';
                 el.tabIndex = 0;
@@ -19,10 +20,10 @@ function XYFocusManagerFocusEngagementMixin(XYFocusManager) {
             this.focusManager.focusablePredicates.add(function (el) {
                 return el.dataset['focusEngagement'] === '';
             });
-            this.xyInputManager.addKeyMapping('activateFocusEngagement', { key: 'Enter', keyCode: 13 });
-            this.xyInputManager.addKeyMapping('deactivateFocusEngagement', { key: 'Escape', keyCode: 27 });
+            this.keyboardInputManager.addKeyMapping('activateFocusEngagement', { key: 'Enter', keyCode: 13 });
+            this.keyboardInputManager.addKeyMapping('deactivateFocusEngagement', { key: 'Escape', keyCode: 27 });
             var self = this;
-            this.xyInputManager.addEventListener('keyinput', function (event) {
+            this.keyboardInputManager.addEventListener('keyinput', function (event) {
                 switch (event.keyClass) {
                     case 'activateFocusEngagement':
                         if (self.activateFocusEngagement(self._currFocusEl)) {
@@ -39,9 +40,8 @@ function XYFocusManagerFocusEngagementMixin(XYFocusManager) {
         }
         XYFocusManagerFocusEngagement.prototype.activateFocusEngagement = function (focusEl) {
             if (focusEl && focusEl.dataset['focusEngagement'] === '' && !focusEl.$isFocusEngaged) {
-                // Trigger a cancelable 'focusengaged' event
                 var cancelled = !this.dispatchEvent({
-                    type: 'focusengaged',
+                    type: 'focusengaging',
                     focusElement: focusEl,
                     cancelable: true
                 });
@@ -67,6 +67,10 @@ function XYFocusManagerFocusEngagementMixin(XYFocusManager) {
                 else {
                     throw new Error('No focusable child found for engaged focus root.');
                 }
+                this.dispatchEvent({
+                    type: 'focusengaged',
+                    focusElement: this._currFocusRoot
+                });
                 return true;
             }
             return false;
@@ -74,14 +78,23 @@ function XYFocusManagerFocusEngagementMixin(XYFocusManager) {
         XYFocusManagerFocusEngagement.prototype.deactivateFocusEngagement = function () {
             if (this.focusStack.length) {
                 var engagedEl = this._currFocusRoot;
+                var cancelled = !this.dispatchEvent({
+                    type: 'focusdisengaging',
+                    focusElement: engagedEl,
+                    cancelable: true
+                });
+                if (cancelled)
+                    return false;
                 delete engagedEl.$isFocusEngaged;
                 this.currFocusRoot = this.focusStack.pop();
                 this._currFocusEl = this.focusStack.pop();
                 if (this._currFocusEl) {
                     this.focusManager.setCurrentFocusElement(this._currFocusEl);
                 }
-                // Trigger a non-cancelable 'focusdisengaged' event
-                this.dispatchEvent({ type: 'focusdisengaged', focusElement: engagedEl });
+                this.dispatchEvent({
+                    type: 'focusdisengaged',
+                    focusElement: engagedEl
+                });
                 return true;
             }
             return false;

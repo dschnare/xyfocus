@@ -9,8 +9,8 @@ var XYDirections = require('./XYDirections');
 function XYFocusManagerFocusRootMixin(XYFocusManager) {
     return (function (_super) {
         __extends(XYFocusManagerFocusRoot, _super);
-        function XYFocusManagerFocusRoot(focusManager, xyInputManager) {
-            _super.call(this, focusManager, xyInputManager);
+        function XYFocusManagerFocusRoot(focusManager, keyboardInputManager) {
+            _super.call(this, focusManager, keyboardInputManager);
             this._currFocusRoot = null;
             this._currFocusEl = null;
             // Prevent clicks and touches on the document from taking focus away from the
@@ -23,18 +23,16 @@ function XYFocusManagerFocusRootMixin(XYFocusManager) {
                 }
             });
             var self = this;
+            this.focusManager.addEventListener('focuschanging', function (event) {
+                var focusRoot = self.getFocusRoot(event.focusElement);
+                if (this._currFocusRoot && focusRoot !== this._currFocusRoot) {
+                    event.preventDefault();
+                }
+            });
             this.focusManager.addEventListener('focuschanged', function (event) {
-                if (event.focusElement === self._currFocusEl)
-                    return;
-                var focusRoot = getFocusRoot(event.focusElement);
-                if (focusRoot === self._currFocusRoot || !self._currFocusRoot) {
-                    self._currFocusEl = event.focusElement;
-                    self._currFocusRoot = focusRoot;
-                }
-                else {
-                    event.stopImmediatePropagation();
-                    self.focusManager.setCurrentFocusElement(self._currFocusEl);
-                }
+                var focusRoot = self.getFocusRoot(event.focusElement);
+                self._currFocusEl = event.focusElement;
+                self._currFocusRoot = focusRoot;
             });
             document.body.tabIndex = -1;
             document.body.dataset['focusRoot'] = '';
@@ -63,19 +61,6 @@ function XYFocusManagerFocusRootMixin(XYFocusManager) {
             return null;
         };
         // Overriddes
-        XYFocusManagerFocusRoot.prototype.getNextFocusElementPositionOverride = function (xyDirection, el) {
-            var isFocusRoot = el.dataset['focusRoot'] === '';
-            var rect = el.getBoundingClientRect();
-            if (isFocusRoot) {
-                switch (xyDirection) {
-                    case XYDirections.DIR_RIGHT:
-                        return { x: rect.left + rect.width, y: rect.top };
-                    case XYDirections.DIR_DOWN:
-                        return { x: rect.left, y: rect.top + rect.height };
-                }
-            }
-            return { x: rect.left, y: rect.top };
-        };
         XYFocusManagerFocusRoot.prototype.getNextFocusElement = function (xyDirection) {
             var nextFocusEl = _super.prototype.getNextFocusElement.call(this, xyDirection);
             if (nextFocusEl) {
@@ -87,7 +72,7 @@ function XYFocusManagerFocusRootMixin(XYFocusManager) {
                     // next focus root.
                     do {
                         var offset = (xyDirection === XYDirections.DIR_RIGHT || xyDirection === XYDirections.DIR_DOWN) ? 1 : -1;
-                        nextFocusEl = getNextTabbableElement(nextFocusEl, offset);
+                        nextFocusEl = this.focusManager.getNextTabbableElement(nextFocusEl, offset);
                     } while (nextFocusEl && this.getFocusRoot(nextFocusEl) !== this._currFocusRoot);
                 }
             }

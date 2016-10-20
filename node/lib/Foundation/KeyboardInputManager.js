@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var EventDispatcher_1 = require('./Foundation/EventDispatcher');
+var EventDispatcher_1 = require('./EventDispatcher');
 var XYInputManager = (function (_super) {
     __extends(XYInputManager, _super);
     function XYInputManager() {
@@ -12,10 +12,18 @@ var XYInputManager = (function (_super) {
         this.map = Object.create(null);
         this.setupDomListeners();
     }
-    XYInputManager.prototype.addKeyMapping = function (keyClass, keyMapping) {
-        var keyMappings = this.map[keyClass] || [];
-        keyMappings.push(keyMapping);
-        this.map[keyClass] = keyMappings;
+    // addKeyMapping(keyClass, keyMapping)
+    // addKeyMapping(keyClass, keyMappings)
+    XYInputManager.prototype.addKeyMapping = function (keyClass, keyMappings) {
+        if (!Array.isArray(keyMappings))
+            keyMappings = [keyMappings];
+        keyMappings = keyMappings.slice();
+        var theKeyMappings;
+        while (keyMappings.length) {
+            theKeyMappings = this.map[keyClass] || [];
+            theKeyMappings.push(keyMappings.pop());
+            this.map[keyClass] = theKeyMappings;
+        }
     };
     XYInputManager.prototype.getKeyMappings = function (keyClass) {
         return (this.map[keyClass] || []).slice();
@@ -42,11 +50,11 @@ var XYInputManager = (function (_super) {
     };
     XYInputManager.prototype.setupDomListeners = function () {
         var self = this;
-        document.body.addEventListener('keydown', function (event) {
+        document.documentElement.addEventListener('keydown', function (event) {
             var keyClass = self.getKeyClassForKeyboardEvent(event);
             if (keyClass) {
                 var inputEvent = { type: 'keyinput', keyClass: keyClass };
-                var cancelled = !!self.dispatchEvent(inputEvent);
+                var cancelled = !self.dispatchEvent(inputEvent);
                 if (cancelled)
                     event.preventDefault();
                 if (inputEvent.propagationStopped)

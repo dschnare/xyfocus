@@ -18,20 +18,34 @@ var FocusManager = (function (_super) {
         this.focusablePredicates.add(function (el) { return el.tabIndex >= 0; });
     }
     FocusManager.prototype.currentFocusElement = function () {
-        return this._currentFocusEl;
+        return this._currFocusEl;
     };
     FocusManager.prototype.setCurrentFocusElement = function (el) {
-        if (el !== this._currentFocusEl) {
-            var prev = this._currentFocusEl;
-            this._currentFocusEl = el;
+        if (el !== this._currFocusEl) {
+            var prev = this._currFocusEl;
+            var cancelled = !this.dispatchEvent({
+                type: 'focuschanging',
+                focusElement: el,
+                previousFocusElement: prev,
+                cancelable: true
+            });
+            if (cancelled)
+                return false;
+            this._currFocusEl = el;
+            this.focusChangeOverride(this._currFocusEl, prev);
             this.dispatchEvent({
                 type: 'focuschanged',
-                focusElement: this._currentFocusEl,
+                focusElement: this._currFocusEl,
                 previousFocusElement: prev
             });
             return true;
         }
         return false;
+    };
+    FocusManager.prototype.focusChangeOverride = function (currentFocusElement, previousFocusElement) {
+        // NOTE: This function would be overridden to perform the actual focus
+        // logic (i.e. adding/removing CSS classes, calling DOM focus methods,
+        // etc.)
     };
     FocusManager.prototype.getTabbableElements = function () {
         if (!this._tabbableEls) {
@@ -47,7 +61,7 @@ var FocusManager = (function (_super) {
         currentEl = currentEl || document.activeElement;
         offset = isNaN(offset) ? 1 : offset;
         var els = this.getTabbableElements()
-            .filter(isElementTabbable)
+            .filter(this.isElementTabbable)
             .sort(function (a, b) {
             return a.tabindex - b.tabindex;
         });
